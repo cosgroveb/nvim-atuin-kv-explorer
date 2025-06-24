@@ -16,19 +16,19 @@ local is_setup = false
 ---@param opts table|nil User configuration options
 function M.setup(opts)
   opts = opts or {}
-  
+
   -- Merge with defaults using config module
-  local config_module = require("atuin-kv-explorer.config")
+  local config_module = require "atuin-kv-explorer.config"
   local ok, merged_config = pcall(config_module.merge_config, default_config, opts)
-  
+
   if not ok then
     vim.notify("atuin-kv-explorer: Failed to setup configuration", vim.log.levels.ERROR)
     return
   end
-  
+
   config = merged_config
   is_setup = true
-  
+
   vim.notify("atuin-kv-explorer: Plugin initialized", vim.log.levels.INFO)
 end
 

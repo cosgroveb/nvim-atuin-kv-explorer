@@ -20,15 +20,15 @@ local function validate_config(config)
   if type(config) ~= "table" then
     return false, "Configuration must be a table"
   end
-  
+
   if config.enabled ~= nil and type(config.enabled) ~= "boolean" then
     return false, "enabled must be a boolean"
   end
-  
+
   if config.keymaps and type(config.keymaps) ~= "table" then
     return false, "keymaps must be a table"
   end
-  
+
   return true, nil
 end
 
@@ -41,7 +41,7 @@ function M.merge_config(defaults, user_config)
   if not ok then
     error("Invalid configuration: " .. err)
   end
-  
+
   return vim.tbl_deep_extend("force", defaults, user_config)
 end
 

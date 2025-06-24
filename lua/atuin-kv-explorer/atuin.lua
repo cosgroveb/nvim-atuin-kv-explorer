@@ -21,12 +21,12 @@ function M.execute_atuin_command(args)
     return {
       success = false,
       data = "",
-      error = "Arguments must be a table"
+      error = "Arguments must be a table",
     }
   end
-  
+
   -- Build command string with proper escaping
-  local cmd_parts = {"atuin", "kv"}
+  local cmd_parts = { "atuin", "kv" }
   for _, arg in ipairs(args) do
     if type(arg) == "string" then
       table.insert(cmd_parts, vim.fn.shellescape(arg))
@@ -34,60 +34,60 @@ function M.execute_atuin_command(args)
       return {
         success = false,
         data = "",
-        error = "All arguments must be strings"
+        error = "All arguments must be strings",
       }
     end
   end
-  
+
   local cmd = table.concat(cmd_parts, " ")
-  
+
   -- Execute command
   local ok, output = pcall(vim.fn.system, cmd)
   if not ok then
     return {
       success = false,
       data = "",
-      error = "Failed to execute command: " .. tostring(output)
+      error = "Failed to execute command: " .. tostring(output),
     }
   end
-  
+
   -- Check command exit status
   local exit_code = vim.v.shell_error
   if exit_code ~= 0 then
     return {
       success = false,
       data = output,
-      error = "Command failed with exit code " .. exit_code
+      error = "Command failed with exit code " .. exit_code,
     }
   end
-  
+
   return {
     success = true,
     data = output,
-    error = nil
+    error = nil,
   }
 end
 
 --- List all namespaces
 ---@return table Result with namespace list
 function M.list_namespaces()
-  local result = M.execute_atuin_command({"list", "--namespace"})
+  local result = M.execute_atuin_command { "list", "--namespace" }
   if not result.success then
     return result
   end
-  
+
   -- Parse namespace list - each line is a namespace
   local namespaces = {}
-  for line in result.data:gmatch("[^\r\n]+") do
-    if line:match("%S") then -- Skip empty lines
-      table.insert(namespaces, line:match("^%s*(.-)%s*$")) -- Trim whitespace
+  for line in result.data:gmatch "[^\r\n]+" do
+    if line:match "%S" then -- Skip empty lines
+      table.insert(namespaces, line:match "^%s*(.-)%s*$") -- Trim whitespace
     end
   end
-  
+
   return {
     success = true,
     data = namespaces,
-    error = nil
+    error = nil,
   }
 end
 
@@ -100,27 +100,27 @@ function M.list_keys(namespace)
     return {
       success = false,
       data = {},
-      error = err
+      error = err,
     }
   end
-  
-  local result = M.execute_atuin_command({"list", "--namespace", namespace})
+
+  local result = M.execute_atuin_command { "list", "--namespace", namespace }
   if not result.success then
     return result
   end
-  
+
   -- Parse key list - each line is a key
   local keys = {}
-  for line in result.data:gmatch("[^\r\n]+") do
-    if line:match("%S") then -- Skip empty lines
-      table.insert(keys, line:match("^%s*(.-)%s*$")) -- Trim whitespace
+  for line in result.data:gmatch "[^\r\n]+" do
+    if line:match "%S" then -- Skip empty lines
+      table.insert(keys, line:match "^%s*(.-)%s*$") -- Trim whitespace
     end
   end
-  
+
   return {
     success = true,
     data = keys,
-    error = nil
+    error = nil,
   }
 end
 
@@ -134,28 +134,28 @@ function M.get_value(namespace, key)
     return {
       success = false,
       data = "",
-      error = err
+      error = err,
     }
   end
-  
+
   ok, err = validate_string_param(key, "Key")
   if not ok then
     return {
       success = false,
       data = "",
-      error = err
+      error = err,
     }
   end
-  
-  local result = M.execute_atuin_command({"get", "--namespace", namespace, key})
+
+  local result = M.execute_atuin_command { "get", "--namespace", namespace, key }
   if not result.success then
     return result
   end
-  
+
   return {
     success = true,
     data = result.data,
-    error = nil
+    error = nil,
   }
 end
 

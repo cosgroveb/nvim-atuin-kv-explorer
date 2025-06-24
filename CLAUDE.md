@@ -21,9 +21,19 @@ Following standard Neovim plugin conventions:
 - `plugin/atuin-kv-explorer.lua` - Plugin initialization
 - `doc/atuin-kv-explorer.txt` - Help documentation
 
-## Key Features (Planned)
+## Key Features (Planned)  
 - Browse Atuin KV namespaces and keys
 - View/edit key-value pairs
 - Integration with Neovim's native UI components
 - Lazy loading for performance
 - Comprehensive configuration options
+
+## Development Requirements
+- Always run `make check` before committing code
+- Code must pass both stylua formatting and selene linting
+- Use `make format-fix` to auto-fix formatting issues
+
+## Linting Strategy
+- **stylua**: Code formatting and style consistency
+- **selene**: Lua linting and static analysis
+- Both tools installed via cargo for consistency
