@@ -34,6 +34,6 @@ Following standard Neovim plugin conventions:
 - Use `make format-fix` to auto-fix formatting issues
 
 ## Linting Strategy
-- **stylua**: Code formatting and style consistency
-- **selene**: Lua linting and static analysis
-- Both tools installed via cargo for consistency
+- **stylua**: Code formatting and style consistency (installed via cargo)
+- **luacheck**: Lua linting and static analysis (installed via apt/brew)
+- Both tools required for clean commits

@@ -31,6 +31,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
    ```bash
    make install-deps
    ```
+   This installs stylua via cargo and prompts for luacheck installation.
 
 ### Development Workflow
 
@@ -41,7 +42,7 @@ make check
 
 This runs:
 - `stylua` for code formatting
-- `selene` for linting
+- `luacheck` for linting
 
 Individual commands:
 ```bash
