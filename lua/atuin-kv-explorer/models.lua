@@ -58,10 +58,13 @@ function M.parse_key_value(output, namespace, key)
     return nil
   end
 
+  -- Trim trailing newline added by vim.fn.system
+  local value = output:gsub("\n$", "")
+
   return {
     namespace = namespace,
     key = key,
-    value = output,
+    value = value,
   }
 end
 
