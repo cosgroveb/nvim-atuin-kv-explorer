@@ -3,6 +3,17 @@
 # Install development dependencies
 install-deps:
 	cargo install stylua
+	@if command -v brew >/dev/null 2>&1; then \
+		echo "Installing luacheck via Homebrew..."; \
+		brew install luacheck; \
+	elif command -v apt-get >/dev/null 2>&1; then \
+		echo "Installing luacheck via apt..."; \
+		sudo apt-get update && sudo apt-get install -y lua-check; \
+	else \
+		echo "Please install luacheck manually for your system"; \
+		echo "macOS: brew install luacheck"; \
+		echo "Ubuntu/Debian: sudo apt-get install lua-check"; \
+	fi
 
 # Format code with stylua
 format:
@@ -12,11 +23,12 @@ format:
 format-fix:
 	stylua lua/ plugin/
 
-# Lint (using stylua for now)
-lint: format
+# Lint with luacheck
+lint:
+	luacheck lua/ plugin/ --config .luacheckrc
 
-# Run all checks
-check: format
+# Run all checks (format and lint)
+check: format lint
 
 # Run tests (placeholder for future)
 test:
