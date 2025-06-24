@@ -14,7 +14,6 @@ function M.create_explorer_buffer()
     swapfile = false,
     buflisted = false,
     modifiable = false,
-    readonly = true,
     filetype = "atuin-kv-explorer",
   }
 
@@ -22,8 +21,9 @@ function M.create_explorer_buffer()
     vim.api.nvim_set_option_value(option, value, { buf = bufnr })
   end
 
-  -- Set buffer name
-  vim.api.nvim_buf_set_name(bufnr, "Atuin KV Explorer")
+  -- Set buffer name with unique suffix to avoid conflicts
+  local name = "Atuin KV Explorer " .. bufnr
+  vim.api.nvim_buf_set_name(bufnr, name)
 
   -- Setup keymaps
   local keymap_opts = { buffer = bufnr, silent = true, noremap = true }
