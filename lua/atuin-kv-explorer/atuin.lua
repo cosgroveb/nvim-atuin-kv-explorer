@@ -76,13 +76,9 @@ function M.list_namespaces()
     return result
   end
 
-  -- Parse namespace list - each line is a namespace
-  local namespaces = {}
-  for line in result.data:gmatch "[^\r\n]+" do
-    if line:match "%S" then -- Skip empty lines
-      table.insert(namespaces, line:match "^%s*(.-)%s*$") -- Trim whitespace
-    end
-  end
+  -- Parse namespace list using models
+  local models = require "atuin-kv-explorer.models"
+  local namespaces = models.parse_namespace_list(result.data)
 
   return {
     success = true,
@@ -109,13 +105,9 @@ function M.list_keys(namespace)
     return result
   end
 
-  -- Parse key list - each line is a key
-  local keys = {}
-  for line in result.data:gmatch "[^\r\n]+" do
-    if line:match "%S" then -- Skip empty lines
-      table.insert(keys, line:match "^%s*(.-)%s*$") -- Trim whitespace
-    end
-  end
+  -- Parse key list using models
+  local models = require "atuin-kv-explorer.models"
+  local keys = models.parse_key_list(result.data)
 
   return {
     success = true,
@@ -133,7 +125,7 @@ function M.get_value(namespace, key)
   if not ok then
     return {
       success = false,
-      data = "",
+      data = nil,
       error = err,
     }
   end
@@ -142,7 +134,7 @@ function M.get_value(namespace, key)
   if not ok then
     return {
       success = false,
-      data = "",
+      data = nil,
       error = err,
     }
   end
@@ -152,9 +144,13 @@ function M.get_value(namespace, key)
     return result
   end
 
+  -- Parse key value using models
+  local models = require "atuin-kv-explorer.models"
+  local keyvalue = models.parse_key_value(result.data, namespace, key)
+
   return {
     success = true,
-    data = result.data,
+    data = keyvalue,
     error = nil,
   }
 end
