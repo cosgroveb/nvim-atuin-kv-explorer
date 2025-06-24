@@ -71,7 +71,7 @@ end
 --- List all namespaces
 ---@return table Result with namespace list
 function M.list_namespaces()
-  local result = M.execute_atuin_command { "list", "--namespace" }
+  local result = M.execute_atuin_command { "list", "--all-namespaces" }
   if not result.success then
     return result
   end

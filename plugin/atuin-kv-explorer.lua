@@ -10,5 +10,8 @@ vim.g.loaded_atuin_kv_explorer = 1
 -- Plugin metadata
 vim.g.atuin_kv_explorer_version = "0.1.0"
 
--- Command registration placeholder
--- Commands will be registered here after setup
+-- Register user commands
+vim.api.nvim_create_user_command("AtuinKVExplorer", function()
+  local explorer = require "atuin-kv-explorer.explorer"
+  explorer.open()
+end, { desc = "Open Atuin KV Explorer" })
