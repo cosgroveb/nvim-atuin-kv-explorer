@@ -30,9 +30,9 @@ lint:
 # Run all checks (format and lint)
 check: format lint
 
-# Run tests (placeholder for future)
+# Run integration test
 test:
-	@echo "Tests not implemented yet"
+	nvim --headless --noplugin -u NONE -c "set rtp+=." -c "lua dofile('test/integration_test.lua')" -c "quit"
 
 # Clean up generated files
 clean:

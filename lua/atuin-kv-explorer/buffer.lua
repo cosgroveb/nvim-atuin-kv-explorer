@@ -42,10 +42,10 @@ function M.create_explorer_buffer()
   return bufnr
 end
 
---- Display lines in buffer
+--- Display content in buffer
 ---@param bufnr number Buffer number
----@param lines table Array of lines to display
-function M.display_lines(bufnr, lines)
+---@param content string Content to display
+function M.display(bufnr, content)
   if not vim.api.nvim_buf_is_valid(bufnr) then
     return
   end
@@ -53,7 +53,8 @@ function M.display_lines(bufnr, lines)
   -- Make buffer modifiable temporarily
   vim.api.nvim_set_option_value("modifiable", true, { buf = bufnr })
 
-  -- Set buffer contents
+  -- Split content into lines and set buffer contents
+  local lines = vim.split(content, "\n")
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
 
   -- Make buffer read-only again
@@ -63,7 +64,7 @@ end
 --- Clear buffer contents
 ---@param bufnr number Buffer number
 function M.clear_buffer(bufnr)
-  M.display_lines(bufnr, {})
+  M.display(bufnr, "")
 end
 
 --- Select item under cursor
