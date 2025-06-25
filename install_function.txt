@@ -1,0 +1,105 @@
+# Add this function to your ~/.zshrc or zsh config file
+
+# Zsh function to view atuin-stored project metadata for current directory + branch
+project_view() {
+    local action="${1:-list}"
+    
+    # Get project name from current directory
+    local project_name=$(basename "$(pwd)")
+    
+    # Get current git branch (fallback to 'main' if not in git repo)
+    local branch=$(git branch --show-current 2>/dev/null || echo "main")
+    
+    # Construct base key pattern
+    local base_key="${project_name}-${branch}"
+    
+    case "$action" in
+        "list"|"ls")
+            echo "📋 Available project metadata for ${project_name} (${branch}):"
+            echo
+            atuin kv list --namespace "project-metadata" | grep "$base_key" | sort
+            ;;
+        "spec")
+            echo "📄 Project Specification:"
+            echo "================================"
+            atuin kv get --namespace "project-metadata" "${base_key}-spec" 2>/dev/null || {
+                # Try feature branch pattern
+                atuin kv get --namespace "project-metadata" "${project_name}-feature/edit-values-spec" 2>/dev/null || {
+                    echo "No spec found for ${base_key}"
+                    return 1
+                }
+            }
+            ;;
+        "plan")
+            echo "📋 Implementation Plan:"
+            echo "======================="
+            atuin kv get --namespace "project-metadata" "${base_key}-plan" 2>/dev/null || {
+                # Try feature branch pattern
+                atuin kv get --namespace "project-metadata" "${project_name}-feature/edit-values-plan" 2>/dev/null || {
+                    echo "No plan found for ${base_key}"
+                    return 1
+                }
+            }
+            ;;
+        "todo")
+            echo "✅ TODO List:"
+            echo "============="
+            atuin kv get --namespace "project-metadata" "${base_key}-todo" 2>/dev/null || {
+                # Try feature branch pattern
+                atuin kv get --namespace "project-metadata" "${project_name}-feature/edit-values-todo" 2>/dev/null || {
+                    echo "No todo found for ${base_key}"
+                    return 1
+                }
+            }
+            ;;
+        "all")
+            echo "🚀 Complete Project Overview for ${project_name} (${branch})"
+            echo "============================================================"
+            echo
+            project_view spec
+            echo
+            echo
+            project_view plan  
+            echo
+            echo
+            project_view todo
+            ;;
+        "help"|"-h"|"--help")
+            echo "Usage: project_view [action]"
+            echo
+            echo "Actions:"
+            echo "  list, ls    - List all available metadata keys for this project"
+            echo "  spec        - View project specification"  
+            echo "  plan        - View implementation plan"
+            echo "  todo        - View todo list"
+            echo "  all         - View spec, plan, and todo together"
+            echo "  help        - Show this help message"
+            echo
+            echo "Project: ${project_name}"
+            echo "Branch:  ${branch}"
+            echo "Base key: ${base_key}"
+            ;;
+        *)
+            echo "❌ Unknown action: $action"
+            echo "Use 'project_view help' for usage information"
+            return 1
+            ;;
+    esac
+}
+
+# Add tab completion for the function (if zsh completion system is loaded)
+if command -v compdef >/dev/null 2>&1; then
+    _project_view_completion() {
+        local -a actions
+        actions=('list:List available metadata keys' 'spec:View specification' 'plan:View implementation plan' 'todo:View todo list' 'all:View everything' 'help:Show help')
+        _describe 'actions' actions
+    }
+    compdef _project_view_completion project_view
+fi
+
+# Usage examples:
+# project_view           # List available metadata
+# project_view spec      # View specification
+# project_view plan      # View implementation plan  
+# project_view todo      # View todo list
+# project_view all       # View everything

@@ -103,32 +103,26 @@ pick_keys = function(opts)
     :find()
 end
 
--- Show value in a dedicated buffer
+-- Show value in an editable buffer
 show_value_in_buffer = function(namespace, key)
   local result = atuin.get_value(namespace, key)
-  if not result.success then
-    vim.notify("Failed to get value: " .. (result.error or "Unknown error"), vim.log.levels.ERROR)
-    return
+  local initial_content = ""
+
+  if result.success then
+    -- Key exists, use its current value
+    initial_content = result.data.value or ""
+  else
+    -- Key doesn't exist, create empty editable buffer for new key creation
+    vim.notify(string.format("Key %s/%s does not exist, creating new key", namespace, key), vim.log.levels.INFO)
   end
 
-  -- Create a new buffer for the value
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  local lines = vim.split(result.data.value, "\n")
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-
-  -- Set buffer options
-  vim.api.nvim_set_option_value("buftype", "nofile", { buf = bufnr })
-  vim.api.nvim_set_option_value("modifiable", false, { buf = bufnr })
-  vim.api.nvim_buf_set_name(bufnr, string.format("atuin-kv://%s/%s", namespace, key))
+  -- Create editable buffer
+  local buffer = require "atuin-kv-explorer.buffer"
+  local bufnr = buffer.create_editable_buffer(namespace, key, initial_content)
 
   -- Open in a new split
   vim.cmd "split"
   vim.api.nvim_win_set_buf(0, bufnr)
-
-  -- Add keymap to close buffer
-  vim.keymap.set("n", "q", function()
-    vim.api.nvim_buf_delete(bufnr, { force = true })
-  end, { buffer = bufnr, silent = true })
 end
 
 -- Combined search across all namespaces and keys
