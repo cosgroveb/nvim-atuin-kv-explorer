@@ -1,6 +1,14 @@
 # nvim-atuin-kv-explorer
 
-A Neovim plugin for exploring and managing Atuin KV store data directly from within Neovim.
+A Neovim plugin for exploring Atuin KV store data with a telescope-style interface.
+
+## Features
+
+- **Telescope integration** - Familiar fuzzy search interface like your file picker
+- **Preview support** - See value content as you browse keys
+- **Namespace exploration** - Browse namespaces, then keys within them
+- **Read-only viewing** - Focus on exploration and discovery
+- **Fallback UI** - Works with or without telescope installed
 
 ## Installation
 
@@ -8,12 +16,50 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 {
-  "your-username/nvim-atuin-kv-explorer",
-  opts = {
-    -- Configuration options
+  "bcosgrove/nvim-atuin-kv-explorer",
+  dependencies = {
+    "nvim-telescope/telescope.nvim", -- Optional but recommended
   },
-  cmd = { "AtuinKVExplorer" },
+  opts = {
+    ui_mode = "telescope", -- "telescope" or "buffer"
+  },
+  cmd = { "AtuinKVExplorer", "AtuinKVNamespaces", "AtuinKVSearch" },
 }
+```
+
+## Usage
+
+### Commands
+
+- `:AtuinKVExplorer` - Open the explorer (telescope or buffer mode)
+- `:AtuinKVNamespaces` - Browse namespaces with telescope
+- `:AtuinKVSearch` - Search across all namespace/key combinations
+
+### Navigation
+
+**Telescope mode** (default when available):
+- Fuzzy search through namespaces and keys
+- Preview window shows value content
+- `<CR>` to select namespace or view key value
+- `<Esc>` to close picker
+
+**Buffer mode** (fallback):
+- `<CR>` to select item
+- `<BS>` to go back
+- `q` to quit
+
+## Configuration
+
+```lua
+require("atuin-kv-explorer").setup({
+  ui_mode = "telescope", -- "telescope" or "buffer"
+  keymaps = {
+    quit = "q",
+    refresh = "r", 
+    select = "<CR>",
+    back = "<BS>",
+  },
+})
 ```
 
 ## Development
@@ -55,3 +101,14 @@ make lint        # Run linter
 
 - Atuin CLI must be installed and available in PATH
 - Neovim 0.8 or higher
+- telescope.nvim (optional but recommended for best experience)
+
+## Testing
+
+Run the integration test suite:
+
+```bash
+make test
+```
+
+This tests all core functionality including telescope integration.
