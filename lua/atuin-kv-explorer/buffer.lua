@@ -86,6 +86,14 @@ end
 ---@param initial_content string Initial content for the buffer
 ---@return number Buffer number
 function M.create_editable_buffer(namespace, key, initial_content)
+  -- Validate namespace and key
+  if not namespace or namespace == "" then
+    error "Namespace cannot be empty"
+  end
+  if not key or key == "" then
+    error "Key cannot be empty"
+  end
+
   -- Check if buffer already exists for this namespace/key
   local buffer_name = string.format("atuin-kv://%s/%s", namespace, key)
   local existing_bufnr = vim.fn.bufnr(buffer_name)
@@ -177,7 +185,7 @@ function M.setup_modification_tracking(bufnr)
   })
 end
 
---- Handle save request (stub for now, will be completed in step 2)
+--- Handle save request - save buffer content to atuin kv
 ---@param bufnr number Buffer number
 function M.handle_save_request(bufnr)
   local namespace, key = M.get_buffer_metadata(bufnr)
@@ -187,19 +195,28 @@ function M.handle_save_request(bufnr)
     return
   end
 
-  -- Extract buffer content
+  -- Extract buffer content (preserve exact formatting)
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   local content = table.concat(lines, "\n")
 
-  -- For now, just log the save attempt
-  vim.notify(
-    string.format("Save request: %s/%s (%d lines, %d chars)", namespace, key, #lines, #content),
-    vim.log.levels.INFO
-  )
+  -- Save to atuin kv store
+  local atuin = require "atuin-kv-explorer.atuin"
+  local result = atuin.set_value(namespace, key, content)
 
-  -- TODO: Implement actual save to atuin kv in step 2
-  -- For now, mark as saved to test the flow
-  vim.api.nvim_set_option_value("modified", false, { buf = bufnr })
+  if result.success then
+    -- Mark buffer as saved
+    vim.api.nvim_set_option_value("modified", false, { buf = bufnr })
+
+    -- Show success message matching Vim's file save format
+    local line_count = #lines
+    local word = line_count == 1 and "line" or "lines"
+    vim.notify(string.format('"%s" %d %s written', vim.api.nvim_buf_get_name(bufnr), line_count, word))
+  else
+    -- Show error and keep buffer marked as unsaved
+    local error_msg = result.error or "Unknown error"
+    vim.notify(string.format("Failed to save %s/%s: %s", namespace, key, error_msg), vim.log.levels.ERROR)
+    -- Keep modified flag set so :q warns about unsaved changes
+  end
 end
 
 return M
