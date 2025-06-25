@@ -29,10 +29,7 @@ function M.setup(opts)
   config = merged_config
   is_setup = true
 
-  -- Load telescope extension if telescope is available
-  if config_module.use_telescope(config) then
-    pcall(require("telescope").load_extension, "atuin_kv")
-  end
+  -- Note: Telescope extension loading is deferred to runtime to handle lazy loading
 
   vim.notify("atuin-kv-explorer: Plugin initialized", vim.log.levels.INFO)
 end
@@ -55,7 +52,12 @@ function M.open_explorer()
   local ui_mode = config_module.get_ui_mode(config)
 
   if ui_mode == "telescope" then
-    require("telescope").extensions.atuin_kv.namespaces()
+    -- Load telescope extension at runtime if not already loaded
+    local telescope = require "telescope"
+    if not telescope.extensions.atuin_kv then
+      telescope.load_extension "atuin_kv"
+    end
+    telescope.extensions.atuin_kv.namespaces()
   else
     require("atuin-kv-explorer.explorer").open()
   end
@@ -64,7 +66,11 @@ end
 --- Open telescope namespace picker
 function M.telescope_namespaces()
   if pcall(require, "telescope") then
-    require("telescope").extensions.atuin_kv.namespaces()
+    local telescope = require "telescope"
+    if not telescope.extensions.atuin_kv then
+      telescope.load_extension "atuin_kv"
+    end
+    telescope.extensions.atuin_kv.namespaces()
   else
     vim.notify("Telescope is not available", vim.log.levels.ERROR)
   end
@@ -73,7 +79,11 @@ end
 --- Open telescope search across all keys
 function M.telescope_search()
   if pcall(require, "telescope") then
-    require("telescope").extensions.atuin_kv.search()
+    local telescope = require "telescope"
+    if not telescope.extensions.atuin_kv then
+      telescope.load_extension "atuin_kv"
+    end
+    telescope.extensions.atuin_kv.search()
   else
     vim.notify("Telescope is not available", vim.log.levels.ERROR)
   end
