@@ -128,6 +128,28 @@ local function test_explorer_module()
   vim.cmd "close"
 end
 
+local function test_plugin_setup()
+  print("Testing plugin setup and telescope integration...")
+  
+  -- Test basic setup
+  local plugin = require "atuin-kv-explorer"
+  plugin.setup()
+  assert(plugin.is_setup(), "Plugin should be setup")
+  print("✓ Plugin setup works")
+  
+  -- Test telescope extension loading (if telescope is available)
+  local has_telescope = pcall(require, "telescope")
+  if has_telescope then
+    -- Check if extension was loaded
+    local telescope = require "telescope"
+    local extensions = telescope.extensions or {}
+    assert(extensions.atuin_kv ~= nil, "Telescope extension should be loaded")
+    print("✓ Telescope extension loaded")
+  else
+    print("✓ Telescope not available (skipping extension test)")
+  end
+end
+
 -- Run all tests
 local function run_tests()
   print("=== nvim-atuin-kv-explorer Integration Test ===")
@@ -142,6 +164,7 @@ local function run_tests()
     test_list_view_module,
     test_value_view_module,
     test_explorer_module,
+    test_plugin_setup,
   }
   
   local passed = 0
