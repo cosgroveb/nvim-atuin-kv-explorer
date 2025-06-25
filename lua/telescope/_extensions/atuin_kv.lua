@@ -64,14 +64,9 @@ pick_keys = function(opts)
     return
   end
 
-  if #result.data == 0 then
-    vim.notify("No keys found in namespace: " .. namespace, vim.log.levels.WARN)
-    return
-  end
-
   pickers
     .new(opts, {
-      prompt_title = "Keys in " .. namespace,
+      prompt_title = "Keys in " .. namespace .. " (type new key name to create)",
       finder = finders.new_table {
         results = result.data,
       },
@@ -90,12 +85,25 @@ pick_keys = function(opts)
       },
       attach_mappings = function(prompt_bufnr, _map)
         actions.select_default:replace(function()
-          actions.close(prompt_bufnr)
           local selection = action_state.get_selected_entry()
+          local key_name
+
           if selection then
-            -- Show value in a new buffer
-            show_value_in_buffer(namespace, selection.value)
+            -- Existing key selected
+            key_name = selection.value
+          else
+            -- No selection, use what user typed as new key name
+            local picker = action_state.get_current_picker(prompt_bufnr)
+            key_name = picker:_get_prompt()
+
+            if not key_name or key_name == "" then
+              vim.notify("Please enter a key name", vim.log.levels.WARN)
+              return
+            end
           end
+
+          actions.close(prompt_bufnr)
+          show_value_in_buffer(namespace, key_name)
         end)
         return true
       end,
@@ -151,14 +159,11 @@ local function search_all(opts)
     end
   end
 
-  if #all_items == 0 then
-    vim.notify("No keys found in any namespace", vim.log.levels.WARN)
-    return
-  end
+  -- Allow empty results for manual input
 
   pickers
     .new(opts, {
-      prompt_title = "Search All Atuin KV",
+      prompt_title = "Search All Atuin KV (format: namespace/key to create new)",
       finder = finders.new_table {
         results = all_items,
         entry_maker = function(entry)
@@ -185,11 +190,32 @@ local function search_all(opts)
       },
       attach_mappings = function(prompt_bufnr, _map)
         actions.select_default:replace(function()
-          actions.close(prompt_bufnr)
           local selection = action_state.get_selected_entry()
+
           if selection then
+            -- Existing key selected
             local item = selection.value
+            actions.close(prompt_bufnr)
             show_value_in_buffer(item.namespace, item.key)
+          else
+            -- No selection, parse what user typed as namespace/key
+            local picker = action_state.get_current_picker(prompt_bufnr)
+            local input = picker:_get_prompt()
+
+            if not input or input == "" then
+              vim.notify("Please enter namespace/key format", vim.log.levels.WARN)
+              return
+            end
+
+            -- Parse namespace/key format
+            local namespace, key = input:match "^([^/]+)/(.+)$"
+            if not namespace or not key then
+              vim.notify("Format: namespace/key", vim.log.levels.WARN)
+              return
+            end
+
+            actions.close(prompt_bufnr)
+            show_value_in_buffer(namespace, key)
           end
         end)
         return true
