@@ -3,20 +3,31 @@
 local M = {}
 
 --- Parse namespace list output
----@param output string Raw output from atuin kv list --namespace
----@return table List of namespace names
+---@param output string Raw output from atuin kv list --all-namespaces
+---@return table List of unique namespace names
 function M.parse_namespace_list(output)
   if not output or type(output) ~= "string" then
     return {}
   end
 
-  local namespaces = {}
+  local namespace_set = {}
   for line in output:gmatch "[^\r\n]+" do
     local trimmed = line:match "^%s*(.-)%s*$"
     if trimmed and trimmed ~= "" then
-      table.insert(namespaces, trimmed)
+      -- Extract namespace part (everything before first dot)
+      local namespace = trimmed:match "^([^%.]+)"
+      if namespace then
+        namespace_set[namespace] = true
+      end
     end
   end
+
+  -- Convert set to sorted array
+  local namespaces = {}
+  for namespace in pairs(namespace_set) do
+    table.insert(namespaces, namespace)
+  end
+  table.sort(namespaces)
 
   return namespaces
 end
