@@ -5,7 +5,7 @@ local M = {}
 -- Default configuration values
 M.defaults = {
   enabled = true,
-  ui_mode = "telescope", -- "telescope" or "buffer"
+  ui_mode = "auto", -- "auto", "telescope", or "buffer"
   keymaps = {
     quit = "q",
     refresh = "r",
@@ -52,11 +52,34 @@ function M.get_defaults()
   return vim.deepcopy(M.defaults)
 end
 
---- Check if telescope UI mode is enabled and available
+--- Determine which UI mode to use based on configuration and availability
+---@param config table Configuration object
+---@return string UI mode to use: "telescope" or "buffer"
+function M.get_ui_mode(config)
+  if config.ui_mode == "auto" then
+    -- Auto-detect: prefer telescope, then buffer
+    if pcall(require, "telescope") then
+      return "telescope"
+    else
+      return "buffer"
+    end
+  elseif config.ui_mode == "telescope" then
+    if pcall(require, "telescope") then
+      return "telescope"
+    else
+      vim.notify("telescope not available, falling back to buffer mode", vim.log.levels.WARN)
+      return "buffer"
+    end
+  else
+    return "buffer"
+  end
+end
+
+--- Check if telescope UI mode should be used
 ---@param config table Configuration object
 ---@return boolean True if telescope mode should be used
 function M.use_telescope(config)
-  return config.ui_mode == "telescope" and pcall(require, "telescope")
+  return M.get_ui_mode(config) == "telescope"
 end
 
 return M

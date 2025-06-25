@@ -21,7 +21,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
     "nvim-telescope/telescope.nvim", -- Optional but recommended
   },
   opts = {
-    ui_mode = "telescope", -- "telescope" or "buffer"
+    ui_mode = "auto", -- "auto", "telescope", or "buffer" (auto defaults to telescope if available)
   },
   cmd = { "AtuinKVExplorer", "AtuinKVNamespaces", "AtuinKVSearch" },
 }
@@ -52,7 +52,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 require("atuin-kv-explorer").setup({
-  ui_mode = "telescope", -- "telescope" or "buffer"
+  ui_mode = "auto", -- "auto", "telescope", or "buffer" (auto prefers telescope)
   keymaps = {
     quit = "q",
     refresh = "r", 
