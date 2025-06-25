@@ -5,6 +5,7 @@ local M = {}
 -- Default configuration values
 M.defaults = {
   enabled = true,
+  ui_mode = "telescope", -- "telescope" or "buffer"
   keymaps = {
     quit = "q",
     refresh = "r",
@@ -49,6 +50,13 @@ end
 ---@return table Default configuration
 function M.get_defaults()
   return vim.deepcopy(M.defaults)
+end
+
+--- Check if telescope UI mode is enabled and available
+---@param config table Configuration object
+---@return boolean True if telescope mode should be used
+function M.use_telescope(config)
+  return config.ui_mode == "telescope" and pcall(require, "telescope")
 end
 
 return M

@@ -29,6 +29,11 @@ function M.setup(opts)
   config = merged_config
   is_setup = true
 
+  -- Load telescope extension if telescope is available
+  if config_module.use_telescope(config) then
+    pcall(require("telescope").load_extension, "atuin_kv")
+  end
+
   vim.notify("atuin-kv-explorer: Plugin initialized", vim.log.levels.INFO)
 end
 
@@ -42,6 +47,35 @@ end
 ---@return boolean Setup status
 function M.is_setup()
   return is_setup
+end
+
+--- Open explorer interface (telescope or buffer mode)
+function M.open_explorer()
+  local config_module = require "atuin-kv-explorer.config"
+
+  if config_module.use_telescope(config) then
+    require("telescope").extensions.atuin_kv.namespaces()
+  else
+    require("atuin-kv-explorer.explorer").open()
+  end
+end
+
+--- Open telescope namespace picker
+function M.telescope_namespaces()
+  if pcall(require, "telescope") then
+    require("telescope").extensions.atuin_kv.namespaces()
+  else
+    vim.notify("Telescope is not available", vim.log.levels.ERROR)
+  end
+end
+
+--- Open telescope search across all keys
+function M.telescope_search()
+  if pcall(require, "telescope") then
+    require("telescope").extensions.atuin_kv.search()
+  else
+    vim.notify("Telescope is not available", vim.log.levels.ERROR)
+  end
 end
 
 return M
