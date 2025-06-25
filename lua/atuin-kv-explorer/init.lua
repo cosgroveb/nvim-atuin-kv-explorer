@@ -49,11 +49,12 @@ function M.is_setup()
   return is_setup
 end
 
---- Open explorer interface (telescope or buffer mode)
+--- Open explorer interface (auto-detects telescope or buffer mode)
 function M.open_explorer()
   local config_module = require "atuin-kv-explorer.config"
+  local ui_mode = config_module.get_ui_mode(config)
 
-  if config_module.use_telescope(config) then
+  if ui_mode == "telescope" then
     require("telescope").extensions.atuin_kv.namespaces()
   else
     require("atuin-kv-explorer.explorer").open()
