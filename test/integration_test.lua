@@ -96,20 +96,28 @@ local function test_value_view_module()
   print("Testing value_view module...")
   
   local value_view = require "atuin-kv-explorer.value_view"
-  local buffer = require "atuin-kv-explorer.buffer"
   
-  -- Create test buffer
-  local bufnr = buffer.create_explorer_buffer()
+  -- Test value display (now creates its own editable buffer)
+  value_view.show_value(nil, TEST_NAMESPACE, TEST_KEY)
   
-  -- Test value display
-  value_view.show_value(bufnr, TEST_NAMESPACE, TEST_KEY)
-  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  -- Check the current buffer (should be the editable buffer)
+  local current_bufnr = vim.api.nvim_get_current_buf()
+  local buffer_name = vim.api.nvim_buf_get_name(current_bufnr)
+  local expected_name = string.format("atuin-kv://%s/%s", TEST_NAMESPACE, TEST_KEY)
+  assert(buffer_name == expected_name, "Buffer name should match expected editable buffer name")
+  
+  -- Check buffer is modifiable
+  local is_modifiable = vim.api.nvim_get_option_value("modifiable", { buf = current_bufnr })
+  assert(is_modifiable, "Value buffer should be editable")
+  
+  -- Check content matches
+  local lines = vim.api.nvim_buf_get_lines(current_bufnr, 0, -1, false)
   local content = table.concat(lines, "\n")
   assert(content == TEST_VALUE, "Displayed value should match test value")
-  print("✓ Value display works")
+  print("✓ Value display works with editable buffers")
   
   -- Clean up
-  vim.api.nvim_buf_delete(bufnr, { force = true })
+  vim.api.nvim_buf_delete(current_bufnr, { force = true })
 end
 
 local function test_explorer_module()

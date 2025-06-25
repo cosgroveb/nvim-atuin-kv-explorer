@@ -155,4 +155,52 @@ function M.get_value(namespace, key)
   }
 end
 
+--- Set value for a specific key
+---@param namespace string Namespace name
+---@param key string Key name
+---@param value string Value content to save
+---@return table Result with success status and error information
+function M.set_value(namespace, key, value)
+  local ok, err = validate_string_param(namespace, "Namespace")
+  if not ok then
+    return {
+      success = false,
+      data = nil,
+      error = err,
+    }
+  end
+
+  ok, err = validate_string_param(key, "Key")
+  if not ok then
+    return {
+      success = false,
+      data = nil,
+      error = err,
+    }
+  end
+
+  if type(value) ~= "string" then
+    return {
+      success = false,
+      data = nil,
+      error = "Value must be a string",
+    }
+  end
+
+  local result = M.execute_atuin_command { "set", "--namespace", namespace, "--key", key, value }
+  if not result.success then
+    return {
+      success = false,
+      data = nil,
+      error = result.error,
+    }
+  end
+
+  return {
+    success = true,
+    data = { namespace = namespace, key = key, value = value },
+    error = nil,
+  }
+end
+
 return M
