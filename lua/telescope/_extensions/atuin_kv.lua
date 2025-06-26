@@ -122,14 +122,14 @@ pick_keys = function(opts)
           )
 
           if confirm == 1 then
-            local result = atuin.delete_value(namespace, key_name)
-            if result.success then
+            local delete_result = atuin.delete_value(namespace, key_name)
+            if delete_result.success then
               vim.notify(string.format("Deleted %s/%s", namespace, key_name))
               -- Refresh the picker
               actions.close(prompt_bufnr)
               pick_keys { namespace = namespace }
             else
-              vim.notify(string.format("Failed to delete %s/%s: %s", namespace, key_name, result.error), vim.log.levels.ERROR)
+              vim.notify(string.format("Failed to delete %s/%s: %s", namespace, key_name, delete_result.error), vim.log.levels.ERROR)
             end
           end
         end)
@@ -264,14 +264,14 @@ local function search_all(opts)
           )
 
           if confirm == 1 then
-            local result = atuin.delete_value(item.namespace, item.key)
-            if result.success then
+            local delete_result = atuin.delete_value(item.namespace, item.key)
+            if delete_result.success then
               vim.notify(string.format("Deleted %s/%s", item.namespace, item.key))
               -- Refresh the picker
               actions.close(prompt_bufnr)
               search_all()
             else
-              vim.notify(string.format("Failed to delete %s/%s: %s", item.namespace, item.key, result.error), vim.log.levels.ERROR)
+              vim.notify(string.format("Failed to delete %s/%s: %s", item.namespace, item.key, delete_result.error), vim.log.levels.ERROR)
             end
           end
         end)
