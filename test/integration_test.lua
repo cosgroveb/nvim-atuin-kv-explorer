@@ -19,21 +19,21 @@ end
 
 local function test_atuin_module()
   print("Testing atuin module...")
-  
+
   local atuin = require "atuin-kv-explorer.atuin"
-  
+
   -- Test namespace listing
   local ns_result = atuin.list_namespaces()
   assert(ns_result.success, "Failed to list namespaces: " .. (ns_result.error or "unknown"))
   assert(type(ns_result.data) == "table", "Namespace data should be a table")
   print("✓ Namespace listing works")
-  
+
   -- Test key listing
   local key_result = atuin.list_keys(TEST_NAMESPACE)
   assert(key_result.success, "Failed to list keys: " .. (key_result.error or "unknown"))
   assert(type(key_result.data) == "table", "Key data should be a table")
   print("✓ Key listing works")
-  
+
   -- Test value retrieval
   local val_result = atuin.get_value(TEST_NAMESPACE, TEST_KEY)
   assert(val_result.success, "Failed to get value: " .. (val_result.error or "unknown"))
@@ -44,15 +44,15 @@ end
 
 local function test_buffer_module()
   print("Testing buffer module...")
-  
+
   local buffer = require "atuin-kv-explorer.buffer"
-  
+
   -- Create test buffer
   local bufnr = buffer.create_explorer_buffer()
   assert(bufnr > 0, "Buffer number should be positive")
   assert(vim.api.nvim_buf_is_valid(bufnr), "Buffer should be valid")
   print("✓ Buffer creation works")
-  
+
   -- Test content display
   buffer.display(bufnr, "test content\nline 2")
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
@@ -60,19 +60,19 @@ local function test_buffer_module()
   assert(lines[1] == "test content", "First line should match")
   assert(lines[2] == "line 2", "Second line should match")
   print("✓ Buffer display works")
-  
+
   -- Clean up
   vim.api.nvim_buf_delete(bufnr, { force = true })
 end
 
 local function test_list_view_module()
   print("Testing list display functionality...")
-  
+
   local buffer = require "atuin-kv-explorer.buffer"
-  
+
   -- Create test buffer
   local bufnr = buffer.create_explorer_buffer()
-  
+
   -- Test list display (inline functionality)
   local content = table.concat({"item1", "item2", "item3"}, "\n")
   buffer.display(bufnr, content)
@@ -80,73 +80,73 @@ local function test_list_view_module()
   assert(#lines == 3, "Should have 3 lines")
   assert(lines[1] == "item1", "First item should match")
   print("✓ List display works")
-  
+
   -- Test empty list
   buffer.display(bufnr, "Empty list message")
   lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   assert(#lines == 1, "Should have 1 line for empty message")
   assert(lines[1] == "Empty list message", "Empty message should match")
   print("✓ Empty list handling works")
-  
+
   -- Clean up
   vim.api.nvim_buf_delete(bufnr, { force = true })
 end
 
 local function test_value_view_module()
   print("Testing value display functionality...")
-  
+
   local buffer = require "atuin-kv-explorer.buffer"
   local atuin = require "atuin-kv-explorer.atuin"
-  
+
   -- Test value display (inline functionality)
   local result = atuin.get_value(TEST_NAMESPACE, TEST_KEY)
   local initial_content = result.success and result.data.value or ""
   local edit_bufnr = buffer.create_editable_buffer(TEST_NAMESPACE, TEST_KEY, initial_content)
-  
+
   -- Check the buffer
   local buffer_name = vim.api.nvim_buf_get_name(edit_bufnr)
   local expected_name = string.format("atuin-kv://%s/%s", TEST_NAMESPACE, TEST_KEY)
   assert(buffer_name == expected_name, "Buffer name should match expected editable buffer name")
-  
+
   -- Check buffer is modifiable
   local is_modifiable = vim.api.nvim_get_option_value("modifiable", { buf = edit_bufnr })
   assert(is_modifiable, "Value buffer should be editable")
-  
+
   -- Check content matches
   local lines = vim.api.nvim_buf_get_lines(edit_bufnr, 0, -1, false)
   local content = table.concat(lines, "\n")
   assert(content == TEST_VALUE, "Displayed value should match test value")
   print("✓ Value display works with editable buffers")
-  
+
   -- Clean up
   vim.api.nvim_buf_delete(edit_bufnr, { force = true })
 end
 
 local function test_explorer_module()
   print("Testing explorer module (basic functionality)...")
-  
+
   local explorer = require "atuin-kv-explorer.explorer"
-  
+
   -- Test opening explorer (creates buffer and window)
   local initial_wins = #vim.api.nvim_list_wins()
   explorer.open()
   local new_wins = #vim.api.nvim_list_wins()
   assert(new_wins > initial_wins, "Should create new window")
   print("✓ Explorer opens successfully")
-  
+
   -- Close the explorer window
   vim.cmd "close"
 end
 
 local function test_plugin_setup()
   print("Testing plugin setup and telescope integration...")
-  
+
   -- Test basic setup
   local plugin = require "atuin-kv-explorer"
   plugin.setup()
   assert(plugin.is_setup(), "Plugin should be setup")
   print("✓ Plugin setup works")
-  
+
   -- Test telescope extension loading (if telescope is available)
   local has_telescope = pcall(require, "telescope")
   if has_telescope then
@@ -163,10 +163,10 @@ end
 -- Run all tests
 local function run_tests()
   print("=== nvim-atuin-kv-explorer Integration Test ===")
-  
+
   -- Setup
   setup_test_data()
-  
+
   -- Run tests
   local tests = {
     test_atuin_module,
@@ -176,10 +176,10 @@ local function run_tests()
     test_explorer_module,
     test_plugin_setup,
   }
-  
+
   local passed = 0
   local total = #tests
-  
+
   for i, test_func in ipairs(tests) do
     local ok, err = pcall(test_func)
     if ok then
@@ -188,13 +188,13 @@ local function run_tests()
       print("✗ Test failed: " .. err)
     end
   end
-  
+
   -- Cleanup
   cleanup_test_data()
-  
+
   -- Results
   print(string.format("\n=== Test Results: %d/%d passed ===", passed, total))
-  
+
   if passed == total then
     print("All tests passed! 🎉")
     return true
