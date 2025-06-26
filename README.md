@@ -7,7 +7,9 @@ A Neovim plugin for exploring Atuin KV store data with a telescope-style interfa
 - **Telescope integration** - Familiar fuzzy search interface like your file picker
 - **Preview support** - See value content as you browse keys
 - **Namespace exploration** - Browse namespaces, then keys within them
-- **Read-only viewing** - Focus on exploration and discovery
+- **Value editing** - Edit key values using standard Vim workflows (`:w` to save)
+- **Key creation** - Create new keys by typing key names in telescope
+- **Key deletion** - Delete keys with `<C-d>` and confirmation
 - **Fallback UI** - Works with or without telescope installed
 
 ## Installation
@@ -40,13 +42,21 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 **Telescope mode** (default when available):
 - Fuzzy search through namespaces and keys
 - Preview window shows value content
-- `<CR>` to select namespace or view key value
+- `<CR>` to select namespace or open key for editing
+- `<C-d>` to delete selected key (with confirmation)
+- Type new key names to create them
 - `<Esc>` to close picker
 
 **Buffer mode** (fallback):
 - `<CR>` to select item
 - `<BS>` to go back
 - `q` to quit
+
+**Value editing**:
+- Edit values using standard Vim commands
+- `:w` to save changes to atuin kv
+- `:q` to close (warns about unsaved changes)
+- Buffer name shows `atuin-kv://namespace/key`
 
 ## Configuration
 
