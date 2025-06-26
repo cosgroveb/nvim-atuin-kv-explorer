@@ -26,6 +26,9 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
     ui_mode = "auto", -- "auto", "telescope", or "buffer" (auto defaults to telescope if available)
   },
   cmd = { "AtuinKVExplorer", "AtuinKVNamespaces", "AtuinKVSearch" },
+  keys = {
+    { "<leader>ate", "<cmd>AtuinKVExplorer<cr>", desc = "Atuin KV Explorer - create, edit, delete key-values" },
+  },
 }
 ```
 
