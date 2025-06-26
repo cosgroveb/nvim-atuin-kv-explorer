@@ -83,7 +83,7 @@ pick_keys = function(opts)
           end
         end,
       },
-      attach_mappings = function(prompt_bufnr, _map)
+      attach_mappings = function(prompt_bufnr, map)
         actions.select_default:replace(function()
           local selection = action_state.get_selected_entry()
           local key_name
@@ -105,6 +105,35 @@ pick_keys = function(opts)
           actions.close(prompt_bufnr)
           show_value_in_buffer(namespace, key_name)
         end)
+
+        -- Add delete keymap
+        map("i", "<C-d>", function()
+          local selection = action_state.get_selected_entry()
+          if not selection then
+            vim.notify("No key selected for deletion", vim.log.levels.WARN)
+            return
+          end
+
+          local key_name = selection.value
+          local confirm = vim.fn.confirm(
+            string.format("Delete key '%s' from namespace '%s'?", key_name, namespace),
+            "&Yes\n&No",
+            2
+          )
+
+          if confirm == 1 then
+            local result = atuin.delete_value(namespace, key_name)
+            if result.success then
+              vim.notify(string.format("Deleted %s/%s", namespace, key_name))
+              -- Refresh the picker
+              actions.close(prompt_bufnr)
+              pick_keys { namespace = namespace }
+            else
+              vim.notify(string.format("Failed to delete %s/%s: %s", namespace, key_name, result.error), vim.log.levels.ERROR)
+            end
+          end
+        end)
+
         return true
       end,
     })
@@ -188,7 +217,7 @@ local function search_all(opts)
           end
         end,
       },
-      attach_mappings = function(prompt_bufnr, _map)
+      attach_mappings = function(prompt_bufnr, map)
         actions.select_default:replace(function()
           local selection = action_state.get_selected_entry()
 
@@ -218,6 +247,35 @@ local function search_all(opts)
             show_value_in_buffer(namespace, key)
           end
         end)
+
+        -- Add delete keymap
+        map("i", "<C-d>", function()
+          local selection = action_state.get_selected_entry()
+          if not selection then
+            vim.notify("No key selected for deletion", vim.log.levels.WARN)
+            return
+          end
+
+          local item = selection.value
+          local confirm = vim.fn.confirm(
+            string.format("Delete key '%s' from namespace '%s'?", item.key, item.namespace),
+            "&Yes\n&No",
+            2
+          )
+
+          if confirm == 1 then
+            local result = atuin.delete_value(item.namespace, item.key)
+            if result.success then
+              vim.notify(string.format("Deleted %s/%s", item.namespace, item.key))
+              -- Refresh the picker
+              actions.close(prompt_bufnr)
+              search_all()
+            else
+              vim.notify(string.format("Failed to delete %s/%s: %s", item.namespace, item.key, result.error), vim.log.levels.ERROR)
+            end
+          end
+        end)
+
         return true
       end,
     })
