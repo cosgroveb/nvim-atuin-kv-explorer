@@ -2,44 +2,56 @@
 
 local M = {}
 
---- Create new explorer buffer
+--- Create buffer with common configuration
+---@param buffer_type string "explorer" or "editable"
+---@param name string Buffer name
+---@param initial_content string|nil Initial content for editable buffers
 ---@return number Buffer number
-function M.create_explorer_buffer()
+local function create_buffer(buffer_type, name, initial_content)
   local bufnr = vim.api.nvim_create_buf(false, true)
 
-  -- Configure buffer options
   local opts = {
-    buftype = "nofile",
-    bufhidden = "wipe",
     swapfile = false,
-    buflisted = false,
-    modifiable = false,
-    filetype = "atuin-kv-explorer",
   }
+
+  if buffer_type == "explorer" then
+    opts.buftype = "nofile"
+    opts.bufhidden = "wipe"
+    opts.buflisted = false
+    opts.modifiable = false
+    opts.filetype = "atuin-kv-explorer"
+  else -- editable
+    opts.buftype = ""
+    opts.buflisted = true
+    opts.modifiable = true
+    opts.filetype = "text"
+  end
 
   for option, value in pairs(opts) do
     vim.api.nvim_set_option_value(option, value, { buf = bufnr })
   end
 
-  -- Set buffer name with unique suffix to avoid conflicts
-  local name = "Atuin KV Explorer " .. bufnr
   vim.api.nvim_buf_set_name(bufnr, name)
 
-  -- Setup keymaps
-  local keymap_opts = { buffer = bufnr, silent = true, noremap = true }
-  vim.keymap.set("n", "q", function()
-    vim.api.nvim_buf_delete(bufnr, { force = true })
-  end, keymap_opts)
-
-  vim.keymap.set("n", "<CR>", function()
-    M.select_item(bufnr)
-  end, keymap_opts)
-
-  vim.keymap.set("n", "<BS>", function()
-    M.go_back(bufnr)
-  end, keymap_opts)
+  if buffer_type == "explorer" then
+    local keymap_opts = { buffer = bufnr, silent = true, noremap = true }
+    vim.keymap.set("n", "q", function()
+      vim.api.nvim_buf_delete(bufnr, { force = true })
+    end, keymap_opts)
+  elseif initial_content and initial_content ~= "" then
+    local lines = vim.split(initial_content, "\n")
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+    vim.api.nvim_set_option_value("modified", false, { buf = bufnr })
+  end
 
   return bufnr
+end
+
+--- Create new explorer buffer
+---@return number Buffer number
+function M.create_explorer_buffer()
+  local name = "Atuin KV Explorer " .. vim.fn.localtime()
+  return create_buffer("explorer", name)
 end
 
 --- Display content in buffer
@@ -61,82 +73,27 @@ function M.display(bufnr, content)
   vim.api.nvim_set_option_value("modifiable", false, { buf = bufnr })
 end
 
---- Clear buffer contents
----@param bufnr number Buffer number
-function M.clear_buffer(bufnr)
-  M.display(bufnr, "")
-end
-
---- Select item under cursor
----@param _bufnr number Buffer number
-function M.select_item(_bufnr)
-  local line = vim.api.nvim_get_current_line()
-  vim.notify("Selected: " .. line, vim.log.levels.INFO)
-end
-
---- Go back/up one level
----@param _bufnr number Buffer number
-function M.go_back(_bufnr)
-  vim.notify("Go back", vim.log.levels.INFO)
-end
-
 --- Create editable buffer for atuin kv values
 ---@param namespace string Namespace name
 ---@param key string Key name
 ---@param initial_content string Initial content for the buffer
 ---@return number Buffer number
 function M.create_editable_buffer(namespace, key, initial_content)
-  -- Validate namespace and key
-  if not namespace or namespace == "" then
-    error "Namespace cannot be empty"
-  end
-  if not key or key == "" then
-    error "Key cannot be empty"
+  if not namespace or namespace == "" or not key or key == "" then
+    error "Namespace and key cannot be empty"
   end
 
-  -- Check if buffer already exists for this namespace/key
   local buffer_name = string.format("atuin-kv://%s/%s", namespace, key)
   local existing_bufnr = vim.fn.bufnr(buffer_name)
 
   if existing_bufnr ~= -1 and vim.api.nvim_buf_is_valid(existing_bufnr) then
-    -- Switch to existing buffer
     vim.api.nvim_set_current_buf(existing_bufnr)
     return existing_bufnr
   end
 
-  -- Create new buffer
-  local bufnr = vim.api.nvim_create_buf(false, true)
-
-  -- Configure buffer options for editing
-  local opts = {
-    buftype = "",
-    swapfile = false,
-    buflisted = true,
-    modifiable = true,
-    filetype = "text",
-  }
-
-  for option, value in pairs(opts) do
-    vim.api.nvim_set_option_value(option, value, { buf = bufnr })
-  end
-
-  -- Set buffer name
-  vim.api.nvim_buf_set_name(bufnr, buffer_name)
-
-  -- Set initial content
-  if initial_content and initial_content ~= "" then
-    local lines = vim.split(initial_content, "\n")
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-    -- Mark as unmodified since this is the initial state
-    vim.api.nvim_set_option_value("modified", false, { buf = bufnr })
-  end
-
-  -- Setup save detection
+  local bufnr = create_buffer("editable", buffer_name, initial_content)
   M.setup_save_autocmd(bufnr)
-
-  -- Setup modification tracking
   M.setup_modification_tracking(bufnr)
-
   return bufnr
 end
 
