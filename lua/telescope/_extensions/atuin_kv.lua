@@ -21,7 +21,7 @@ local function show_value_in_buffer(namespace, key)
 
   local buffer = require "atuin-kv-explorer.buffer"
   local bufnr = buffer.create_editable_buffer(namespace, key, initial_content)
-  vim.cmd "split"
+  -- switch to the buffer in current window
   vim.api.nvim_win_set_buf(0, bufnr)
 end
 

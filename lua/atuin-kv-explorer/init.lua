@@ -133,7 +133,7 @@ function M.open_explorer_buffer()
   local buffer = require "atuin-kv-explorer.buffer"
   local bufnr = buffer.create_explorer_buffer()
 
-  vim.cmd "split"
+  -- switch to the buffer in current window
   vim.api.nvim_win_set_buf(0, bufnr)
 
   explorer_state.bufnr = bufnr
