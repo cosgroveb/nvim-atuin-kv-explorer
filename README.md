@@ -18,7 +18,7 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 {
-  "bcosgrove/nvim-atuin-kv-explorer",
+  "cosgroveb/nvim-atuin-kv-explorer",
   dependencies = {
     "nvim-telescope/telescope.nvim", -- Optional but recommended
   },
