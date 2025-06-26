@@ -203,4 +203,39 @@ function M.set_value(namespace, key, value)
   }
 end
 
+--- Delete a key
+---@param namespace string Namespace name
+---@param key string Key name
+---@return table Result with success status and error information
+function M.delete_value(namespace, key)
+  local ok, err = validate_string_param(namespace, "Namespace")
+  if not ok then
+    return {
+      success = false,
+      error = err,
+    }
+  end
+
+  ok, err = validate_string_param(key, "Key")
+  if not ok then
+    return {
+      success = false,
+      error = err,
+    }
+  end
+
+  local result = M.execute_atuin_command { "delete", "--namespace", namespace, key }
+  if not result.success then
+    return {
+      success = false,
+      error = result.error,
+    }
+  end
+
+  return {
+    success = true,
+    error = nil,
+  }
+end
+
 return M
